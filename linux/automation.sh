@@ -1,11 +1,15 @@
 #! /bin/bash
+set -e
 
-while getopts d:c: flag
-do
-  case "${flag}" in
-    d) dockerfile=${OPTARG};;
-    c) context=${OPTARG};;
-  esac
-done
+echo "Building the dockerize dockerfile"
+docker build -t dockerize -f ../dockerize/Dockerfile ../dockerize
 
-echo "Building the dockerfile in $dockerfile with $context as context"
+CURRENT_EPOCH=`date +%s` # Using epoch to tag images. Thought using semver or other sequential aproaches would be over engineering this
+echo "Tagging docker image with $CURRENT_EPOCH"
+docker tag dockerize dockerize:$CURRENT_EPOCH
+
+echo "Replacing MY_NEW_IMAGE with dockerize:$CURRENT_EPOCH"
+sed "s/MY_NEW_IMAGE/dockerize:$CURRENT_EPOCH/g" ./script.yaml > ./new-app.yaml
+
+printf "Comparing new-app.yaml to actual state on minikube:\n\n\n\n"
+kubectl diff -f ./new-app.yaml
