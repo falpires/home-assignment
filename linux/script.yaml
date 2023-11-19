@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang-webserver
+  namespace: golang
+  labels:
+    app: golang-webserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: golang-webserver
+  template:
+    metadata:
+      name: golang-webserver
+      labels:
+        app: golang-webserver
+    spec: 
+      initContainers:
+      - name: sleep
+        image: busybox:1.28
+        command: ['/bin/sh', '-c', 'sleep 30']
+      containers:
+      - name: golang-webserver
+        image: MY_NEW_IMAGE
+        imagePullPolicy: Never # This is to tell kubernetes to not try and pull the image, as i have put it on the minikube docker daemon
+        # LIVENESS AND READINESS (Container should have a path for these healthchecks)
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http-web
+            scheme: HTTP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http-web
+            scheme: HTTP
+        ports:
+        - containerPort: 8080
+          name: http-web
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /server.confi
+          name: server-confi
+          readOnly: true
+        # PRE STOP HOOK (Should have command or internal route for graceful shutdown)
+        lifecycle:
+          preStop:
+            exec:
+              command:
+                - echo "Exiting"
+      volumes:
+      - name: server-confi
+        configMap:
+          name: server-confi
+          items:
+          - key: server.confi
+            path: server.confi
+---
+# We should not use plain configmaps to store data like this, but app has hardcoded path to look for server.confi
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: server-confi
+  namespace: golang
+data:
+  server.confi: golangapp:aVeryStr0nkpwd@tcp(golang-app-mysql.svc)/db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: golang-app-svc
+spec:
+  selector:
+    app: golang-webserver
+  ports:
+  - name: web
+    protocol: TCP
+    port: 80
+    targetPort: http-web 

@@ -5,7 +5,7 @@
   * Use the local backend;
   * Use the [Kubernetes Provider](https://registry.terraform.io/providers/hashicorp/kubernetes/latest);
   * Connect to your `minikube` context, using your local `.kube/config;
-  * Load the `app.yaml` from your last task in this module and apply it to your `minukube` context;
+  * Load the `app.yaml` from your last task in this module and apply it to your `minikube` context;
 * Init your terraform script;
 * Apply your terraform script;
 

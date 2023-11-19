@@ -1,0 +1,11 @@
+apiVersion: mysql.oracle.com/v2
+kind: InnoDBCluster
+metadata:
+  name: golang-app-mysql
+  namespace: golang
+spec:
+  secretName: golang-app-passwd
+  tlsUseSelfSigned: true
+  instances: 1
+  router:
+    instances: 1
