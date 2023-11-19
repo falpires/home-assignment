@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  web:
+    image: "dockerize:4"
+    build:
+      context: .
+      target: final
+    ports: 
+      - 8080:8080
+    networks:
+      - database
+    
+    restart: always
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    volumes:
+      - "./server.confi:/server.confi"
+  mysqldb:
+    image: mysql:8.2
+    #restart: always
+    environment:
+      MYSQL_DATABASE: db
+      MYSQL_USER: golangapp
+      MYSQL_PASSWORD: aVeryStr0nkpwd
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - 3306:3306
+    networks:
+      - database
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+networks:
+  database:
+    driver: bridge

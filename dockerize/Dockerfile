@@ -12,5 +12,6 @@ FROM scratch AS final
 
 LABEL maintainer="falpires"
 COPY --from=build /usr/local/go/src/dockerize/golang ./golang
+COPY ./src ./src
 
 ENTRYPOINT ["./golang"]
